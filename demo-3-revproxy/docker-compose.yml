@@ -1,0 +1,61 @@
+version: "3"
+
+services:
+  nginx:
+    image: nginx:latest
+    # build: nginx
+    depends_on:
+      - jira01
+    ports:
+    - "80:80"
+    - "443:443"
+    volumes:
+    - ./nginx-ssl.conf:/etc/nginx/nginx.conf
+    - ../demo-1-artifacts:/tmp/certs
+    networks:
+      - backend
+
+  postgres:
+    image: postgres
+    # ports:
+    #   - 5432:5432
+    volumes:
+    - POSTGRESQL_DATA:/var/lib/postgresql/data
+    environment:
+    - POSTGRES_DB=jira
+    - POSTGRES_USER=jira
+    - POSTGRES_PASSWORD=jira
+    networks:
+      - backend
+
+  jira01:
+    image: atlassian/jira-software
+    depends_on:
+      - postgres
+    ports:
+      - 8080:8080
+    volumes:
+      - JIRA_HOME_1:/var/atlassian/application-data/jira
+      - JIRA_SHARED_HOME:/var/atlassian/application-data/jira/shared
+    environment:
+      - JVM_MINIMUM_MEMORY=512m
+      - JVM_MAXIMUM_MEMORY=1024m
+      - ATL_PROXY_NAME=jira-dev.local
+      - ATL_PROXY_PORT=443
+      - ATL_TOMCAT_SECURE=true
+      - ATL_TOMCAT_SCHEME=https
+      - ATL_JDBC_URL=jdbc:postgresql://postgres:5432/jira
+      - ATL_JDBC_USER=jira
+      - ATL_JDBC_PASSWORD=jira
+      - ATL_DB_DRIVER=org.postgresql.Driver
+      - ATL_DB_TYPE=postgres72
+    networks:
+      - backend
+
+volumes:
+  POSTGRESQL_DATA:
+  JIRA_SHARED_HOME:
+  JIRA_HOME_1:
+
+networks:
+  backend:
