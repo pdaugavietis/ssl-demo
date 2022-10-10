@@ -7,16 +7,16 @@ docker run -it -v $(pwd)/demo-1-artifacts/:/ssl alpine-ssl
 
 # from inside container:
 openssl genrsa -out rootCA.key 4096
-openssl req -x509 -new -subj "/C=CA/ST=Ontario/L=Toronto/O=Adaptavist Canada Inc./OU=DevOps PS/CN=root" -nodes -key rootCA.key -sha256 -days 1024 -out rootCA.crt
+openssl req -x509 -new -subj "/C=CA/ST=Ontario/L=Toronto/O=SDLC Solutions/OU=DevOps PS/CN=root" -nodes -key rootCA.key -sha256 -days 1024 -out rootCA.crt
 openssl x509 -in rootCA.crt -text
 
 openssl genrsa -out localhost.key 2048
 openssl pkey -in localhost.key -text
 
-openssl req -new -sha256 -key localhost.key -subj "/C=CA/ST=Ontario/L=Toronto/O=Adaptavist Canada Inc./OU=DevOps PS/CN=localhost" -reqexts SAN -config <(cat /etc/ssl/openssl.cnf <(printf "\n[SAN]\nsubjectAltName=DNS:jira-dev.local")) -out localhost.csr
+openssl req -new -sha256 -key localhost.key -subj "/C=CA/ST=Ontario/L=Toronto/O=SDLC Solutions/OU=DevOps PS/CN=localhost" -reqexts SAN -config <(cat /etc/ssl/openssl.cnf <(printf "\n[SAN]\nsubjectAltName=DNS:dev.localhost.local")) -out localhost.csr
 openssl req -in localhost.csr -text
 
-openssl x509 -req -extfile <(printf "subjectAltName=DNS:jira-dev.local") -days 120 -in localhost.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -out localhost.crt -sha256
+openssl x509 -req -extfile <(printf "subjectAltName=DNS:dev.localhost.local") -days 120 -in localhost.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -out localhost.crt -sha256
 openssl x509 -in localhost.crt -text
 ```
 
@@ -37,5 +37,5 @@ openssl pkcs12 -export -in demo-1-artifacts/localhost.crt -inkey demo-1-artifact
                          type="RSA" />
         </SSLHostConfig>
     </Connector>
-...    
+...
 ```
